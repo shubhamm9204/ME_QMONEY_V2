@@ -46,7 +46,16 @@ public class PortfolioManagerApplication {
 
   public static List<String> mainReadFile(String[] args) throws IOException, URISyntaxException {
 
-     return Collections.emptyList();
+    File tradesFile = resolveFileFromResources(args[0]);
+
+    ObjectMapper objectMapper = getObjectMapper();
+  
+    PortfolioTrade[] trades =
+        objectMapper.readValue(tradesFile, PortfolioTrade[].class);
+  
+    return Arrays.stream(trades)
+        .map(PortfolioTrade::getSymbol)
+        .collect(Collectors.toList());
   }
 
 
@@ -117,10 +126,10 @@ public class PortfolioManagerApplication {
   public static List<String> debugOutputs() {
 
      String valueOfArgument0 = "trades.json";
-     String resultOfResolveFilePathArgs0 = "";
-     String toStringOfObjectMapper = "";
-     String functionNameFromTestFileInStackTrace = "";
-     String lineNumberFromTestFileInStackTrace = "";
+     String resultOfResolveFilePathArgs0 = "/home/crio-user/workspace/shubhamm9204-ME_QMONEY_V2/qmoney/bin/main/trades.json";
+     String toStringOfObjectMapper = "com.fasterxml.jackson.databind.ObjectMapper@6150c3ec";
+     String functionNameFromTestFileInStackTrace = "mainReadFile";
+     String lineNumberFromTestFileInStackTrace = "29";
 
 
     return Arrays.asList(new String[]{valueOfArgument0, resultOfResolveFilePathArgs0,
