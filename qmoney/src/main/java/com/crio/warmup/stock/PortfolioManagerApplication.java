@@ -86,7 +86,9 @@ public static String prepareUrl(
 }
 
 public static String getToken() {
+   //#region
   return "36e1ac52b10755bedbbc4dfaedecf667c4b4b269";
+  //#endregion
 }
 
 
@@ -101,9 +103,9 @@ public static List<String> mainReadQuotes(String[] args)
   LocalDate endDate = LocalDate.parse(args[1]);
 
   // Replace this value with your actual Tiingo token.
-  //#region
+ 
   String token = getToken();
-  //#endregion
+  
 
   RestTemplate restTemplate = new RestTemplate();
 
