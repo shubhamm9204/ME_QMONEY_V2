@@ -361,11 +361,19 @@ public static List<String> mainReadQuotes(String[] args)
 
   public static List<AnnualizedReturn> mainCalculateReturnsAfterRefactor(String[] args)
       throws Exception {
-       String file = args[0];
-       LocalDate endDate = LocalDate.parse(args[1]);
-       String contents = readFileAsString(file);
-       ObjectMapper objectMapper = getObjectMapper();
-       return portfolioManager.calculateAnnualizedReturn(Arrays.asList(portfolioTrades), endDate);
+        String filename = args[0];
+        LocalDate endDate = LocalDate.parse(args[1]);
+      
+        List<PortfolioTrade> portfolioTrades =
+            readTradesFromJson(filename);
+      
+        RestTemplate restTemplate = new RestTemplate();
+      
+        PortfolioManager portfolioManager =
+            PortfolioManagerFactory.getPortfolioManager(restTemplate);
+      
+        return portfolioManager.calculateAnnualizedReturn(
+            portfolioTrades, endDate);
   }
 
 
@@ -380,7 +388,7 @@ public static List<String> mainReadQuotes(String[] args)
 
 
 
-    printJsonObject(mainCalculateSingleReturn(args));
+    // printJsonObject(mainCalculateSingleReturn(args));
 
 
 

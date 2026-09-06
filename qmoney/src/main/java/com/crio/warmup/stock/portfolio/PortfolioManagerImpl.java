@@ -27,6 +27,8 @@ import org.springframework.web.client.RestTemplate;
 
 public class PortfolioManagerImpl implements PortfolioManager {
 
+  private final RestTemplate restTemplate;
+
 
 
 
@@ -41,6 +43,36 @@ public class PortfolioManagerImpl implements PortfolioManager {
   // 1. Now we want to convert our code into a module, so we will not call it from main anymore.
   //    Copy your code from Module#3 PortfolioManagerApplication#calculateAnnualizedReturn
   //    into #calculateAnnualizedReturn function here and ensure it follows the method signature.
+  @Override
+public List<AnnualizedReturn> calculateAnnualizedReturn(
+    List<PortfolioTrade> portfolioTrades,
+    LocalDate endDate) {
+
+  List<AnnualizedReturn> annualizedReturns = new ArrayList<>();
+
+  for (PortfolioTrade trade : portfolioTrades) {
+    try {
+      List<Candle> candles = getStockQuote(
+          trade.getSymbol(),
+          trade.getPurchaseDate(),
+          endDate);
+
+      Double buyPrice = getOpeningPriceOnStartDate(candles);
+      Double sellPrice = getClosingPriceOnEndDate(candles);
+
+      AnnualizedReturn result = calculateAnnualizedReturns(
+          endDate, trade, buyPrice, sellPrice);
+
+      annualizedReturns.add(result);
+
+    } catch (JsonProcessingException exception) {
+      throw new RuntimeException(exception);
+    }
+  }
+
+  annualizedReturns.sort(getComparator());
+  return annualizedReturns;
+}
   // 2. Logic to read Json file and convert them into Objects will not be required further as our
   //    clients will take care of it, going forward.
 
@@ -49,6 +81,34 @@ public class PortfolioManagerImpl implements PortfolioManager {
   // ./gradlew test --tests PortfolioManagerTest
 
   //CHECKSTYLE:OFF
+
+  private Double getOpeningPriceOnStartDate(List<Candle> candles) {
+    return candles.get(0).getOpen();
+  }
+  
+  private Double getClosingPriceOnEndDate(List<Candle> candles) {
+    return candles.get(candles.size() - 1).getClose();
+  }
+  
+  private AnnualizedReturn calculateAnnualizedReturns(
+      LocalDate endDate,
+      PortfolioTrade trade,
+      Double buyPrice,
+      Double sellPrice) {
+  
+    double totalReturns = (sellPrice - buyPrice) / buyPrice;
+  
+    double totalYears =
+        DAYS.between(trade.getPurchaseDate(), endDate) / 365.24;
+  
+    double annualizedReturn =
+        Math.pow(1 + totalReturns, 1.0 / totalYears) - 1;
+  
+    return new AnnualizedReturn(
+        trade.getSymbol(),
+        annualizedReturn,
+        totalReturns);
+  }
 
 
 
@@ -66,11 +126,31 @@ public class PortfolioManagerImpl implements PortfolioManager {
 
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
       throws JsonProcessingException {
-     return null;
+        String url = buildUri(symbol, from, to);
+
+        TiingoCandle[] candles =
+            restTemplate.getForObject(url, TiingoCandle[].class);
+      
+        if (candles == null) {
+          return new ArrayList<>();
+        }
+      
+        return Arrays.asList(candles);
   }
 
   protected String buildUri(String symbol, LocalDate startDate, LocalDate endDate) {
-       String uriTemplate = "https:api.tiingo.com/tiingo/daily/$SYMBOL/prices?"
-            + "startDate=$STARTDATE&endDate=$ENDDATE&token=$APIKEY";
+    String uriTemplate =
+    "https://api.tiingo.com/tiingo/daily/$SYMBOL/prices?"
+        + "startDate=$STARTDATE&endDate=$ENDDATE&token=$APIKEY";
+
+return uriTemplate
+    .replace("$SYMBOL", symbol)
+    .replace("$STARTDATE", startDate.toString())
+    .replace("$ENDDATE", endDate.toString())
+    .replace("$APIKEY", getToken());
+  }
+
+  private String getToken() {
+    return "36e1ac52b10755bedbbc4dfaedecf667c4b4b269";
   }
 }
