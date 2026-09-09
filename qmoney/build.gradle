@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'maven-publish'
 }
 
 group = 'com.crio.warmup'
@@ -43,6 +44,18 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.crio.warmup'
+            artifactId = 'annual-return'
+            version = '1.0.0'
+
+            from components.java
+        }
+    }
 }
 
 

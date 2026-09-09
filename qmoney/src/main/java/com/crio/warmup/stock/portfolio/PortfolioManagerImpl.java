@@ -151,6 +151,8 @@ return uriTemplate
   }
 
   private String getToken() {
+     //#region
     return "36e1ac52b10755bedbbc4dfaedecf667c4b4b269";
+     //#endregion
   }
 }
